@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mic</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: #fff;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 120px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+connecting
+</body>
+<script>
+    window.onload = () => {
+        let isOn = false;
+        const soc = new WebSocket(`ws://${window.location.hostname}:8666`);
+        soc.onopen = () => {
+            document.body.innerText = '';
+            soc.send('sync');
+        }
+        soc.onmessage = (m) => {
+            isOn = m.data === 'on';
+            document.body.innerText = isOn ? '🔊' : '🔇';
+        }
+        soc.onclose = () => window.location.reload();
+        soc.onerror = () => window.location.reload();
+        document.body.onclick = () => {
+            document.documentElement.requestFullscreen();
+            soc.send(isOn ? 'off' : 'on');
+        }
+    };
+</script>
+</html>
