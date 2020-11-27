@@ -11,6 +11,16 @@ const WSSs = [];
 let isOn = true;
 let notification = null;
 
+const amixerPath = {
+    get: 'get Capture',
+    set: 'set Capture'
+}
+
+if (process.argv.length >= 4) {
+    amixerPath.get = process.argv[2];
+    amixerPath.set = process.argv[3];
+}
+
 app.get('/', (req, res) => {
     res.sendFile(path.resolve(__dirname, 'index.html'));
 })
@@ -25,10 +35,10 @@ wss.on('connection', ws => {
         console.log('<', message);
         switch (message) {
             case 'on':
-                proc.exec('amixer set Capture cap');
+                proc.exec(`amixer ${amixerPath.set} cap`);
                 break;
             case 'off':
-                proc.exec('amixer set Capture nocap');
+                proc.exec(`amixer ${amixerPath.set} nocap`);
                 break;
             case 'sync':
                 ws.send(isOn ? 'on' : 'off');
@@ -47,7 +57,7 @@ async function notificationToggle() {
 }
 
 setInterval(() => {
-    proc.exec('amixer get Capture | fgrep [off]', ((error, stdout) => {
+    proc.exec(`amixer ${amixerPath.get} Capture | fgrep [off]`, ((error, stdout) => {
         const now = !stdout.length;
         if (now !== isOn) {
             isOn = now;
